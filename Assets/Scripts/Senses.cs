@@ -16,7 +16,7 @@ public class Senses : MonoBehaviour
     // 1) hacer una variable que se puede cambiar desde el editor.
     public float radioDeDeteccion = 20.0f;
     // 1.A) hacer una variable no-pública que se puede cambiar desde el editor
-    [SerializeField] private float radioDeDeteccionPrivado = 2.0f;
+    //[SerializeField] private float radioDeDeteccionPrivado = 2.0f;
 
     [SerializeField] private LayerMask desiredDetectionLayers; 
     
