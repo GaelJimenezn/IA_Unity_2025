@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 /// <summary>
@@ -88,6 +90,13 @@ public class Senses : MonoBehaviour
         return gameObjectsInsideRadius;
     }
 
+    /// <summary>
+    /// Requiere que los objetos a detectarse tengan colliders que toquen a la esfera descrita por estos parámetros.
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="radius"></param>
+    /// <param name="desiredLayers"></param>
+    /// <returns></returns>
     public static List<GameObject> GetObjectsInRadius(Vector3 position, float radius, LayerMask desiredLayers)
     {
         Collider[] collidersInRadius = Physics.OverlapSphere(position, radius, desiredLayers);
@@ -95,7 +104,7 @@ public class Senses : MonoBehaviour
         List<GameObject> objectsInRadius = new List<GameObject>();
         foreach (var collider in collidersInRadius)
         {
-            objectsInRadius.Add(collider.gameObject);
+            objectsInRadius.Add(collider.GameObject());
         }
 
         return objectsInRadius;
@@ -108,7 +117,7 @@ public class Senses : MonoBehaviour
         List<GameObject> objectsInBox = new List<GameObject>();
         foreach (var collider in collidersInBox)
         {
-            objectsInBox.Add(collider.gameObject);
+            objectsInBox.Add(collider.GameObject());
         }
 
         return objectsInBox;
@@ -138,24 +147,40 @@ public class Senses : MonoBehaviour
     public List<GameObject> GetAllObjectsByLayer(int layer)
     {
         List<GameObject> objects = new List<GameObject>();
-        if (_foundGameObjects != null)
+        foreach (var foundObject in _foundGameObjects)
         {
-            foreach (var foundObject in _foundGameObjects)
+            // break; // break es: salte del ciclo donde estés.
+
+            if (foundObject.layer != layer)
+                continue; // continue es: vete a la siguiente iteración del ciclo en donde estás.
+                
+            if (IsObjectInRange(foundObject.transform.position, transform.position, radioDeDeteccion))
             {
-                // break; // break es: salte del ciclo donde estés.
-
-                if (foundObject.layer != layer)
-                    continue; // continue es: vete a la siguiente iteración del ciclo en donde estás.
-
-                if (IsObjectInRange(foundObject.transform.position, transform.position, radioDeDeteccion))
-                {
-                    objects.Add(foundObject);
-                }
-
+                objects.Add(foundObject);
             }
+                
         }
+
         return objects;
     }
+    
+    // Esta es peor en performance, por eso la quité, pero vean la flexibilidad que nos da tener las cosas en funciones.
+    // public List<GameObject> GetAllObjectsByLayerAlterna(int layer)
+    // {
+    //     List<GameObject> objects = GetGameObjectsInsideRadius(radioDeDeteccion, transform.position);
+    //     foreach (var foundObject in _foundGameObjects)
+    //     {
+    //         // break; // break es: salte del ciclo donde estés.
+    //
+    //         if (foundObject.layer != layer)
+    //             continue; // continue es: vete a la siguiente iteración del ciclo en donde estás.
+    //         
+    //         // si sí son de la layer que quiero, entonces los añado a los gameObjects de salida.
+    //         objects.Add(foundObject);
+    //     }
+    //
+    //     return objects;
+    // }
 
     public List<GameObject> GetPlayers()
     {
@@ -171,18 +196,68 @@ public class Senses : MonoBehaviour
     {
         return GetAllObjectsByLayer(LayerMask.NameToLayer("EnemyBullet"));
     }
+
+    // esta es la que se usa para comparar entre Tags
+    public static bool CompareString(string a, string b)
+    {
+        // si no son de la misma longitud, no pueden ser iguales
+        if (a.Length != b.Length)
+            return false;
+
+        for (int i = 0; i < a.Length; i++)
+        {
+            if (a[i] != b[i])
+                return false;
+        }
+        
+        return true;
+    }
     
+    // la Layer es solo un int, entonces solo necesitas una comparación para saber qué choca con qué.
+    // Principalmente se usan para la simulación física. Podemos tener hasta 32 layers porque un entero tiene 32 bits (4 bytes).
+    // [0100 0000] // este es un enemy
+    // [1000 0000] // este de aquí es un player (
+    //
+    //
+    // [1000 0000] -> [0000 1110][0100 0001] // esta es la máscara de bits de las cosas contras las que el Player sí quiere chocar.
+    //
+    // // chocamos contra un Enemy
+    // [0000 0000][0100 0000] // enemy
+    // [0000 1110][0100 0001] // máscara de bits de player
+    // [0000 0000][0100 0000] // resultado del AND entre los bits de arriba
+    
+    // AND lógico -> && : necesita que ambos valores sean verdaderos para dar verdadero
+    // los 0s son false, y los 1s son true.
+    
+    // OR lógico -> || : necesita que al menos uno de los valores sea true para dar true.
+    
+    // NOT lógico -> ! : invierte los bits de una máscara
+    // [0100 0000] // Enemy
+    // [1011 1111] // NOT an Enemy
+    
+    // XOR lógico -> xor : solo uno puede ser verdad y el otro no, y eso da true.
+    
+    
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
     void Update()
     {
         // DetectarTodosLosGameObjects(); // esta de aquí ya no la llamamos porque es más pesada que la de abajo.
         _foundGameObjects = GetObjectsInRadius(transform.position, radioDeDeteccion, desiredDetectionLayers);
     }
-    
+
+    // OnDrawGizmos Se manda a llamar cada que la pestaña de escena se actualiza. Se actualiza incluso cuando no estás en play mode.
+    // OnDrawGizmosSelected hace lo mismo, pero solo cuando el gameObject con este script esté seleccionado en la escena.
     private void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(transform.position, radioDeDeteccion);
 
-        if (Application.isPlaying && _foundGameObjects != null)
+        if (Application.isPlaying)
         {
             // Después los filtramos para que solo nos dé los que sí están dentro del radio determinado.
             foreach (var foundGameObject in _foundGameObjects)
@@ -204,3 +279,11 @@ public class Senses : MonoBehaviour
         }
     }
 }
+
+/*
+ * Un valor hardcodeado (hardcoded) es un valor alfanumérico que está en el código, pero se necesita para ajustar el
+ * funcionamiento de las cosas.
+ *
+ * El problema de los valores hardcodeados se vuelve más grande entre más veces se utilice dicho valor.
+ * 
+ */

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using Vector3 = System.Numerics.Vector3;
 
 /// <summary>
 /// Una Entidad con capacidades de percibir su ambiente, a sí mismo y a otros agentes y actuar con respecto a lo que percibe.
@@ -56,24 +56,21 @@ public class Agent : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        List<GameObject> foundPlayers = _senses.GetPlayers();
+        List<GameObject> foundPlayers = _senses.GetAllObjectsByLayer(LayerMask.NameToLayer("Player"));
         
         // de los players encontrados, vamos a irnos por el que esté más cerca de este agente.
         // el que esté más cerca será el player que tenga la menor distancia con respecto a este agente.
         float shortestDistance = float.PositiveInfinity;
         GameObject nearestPlayer = null;
-        if (foundPlayers != null)
+        foreach (var player in foundPlayers)
         {
-            foreach (var player in foundPlayers)
+            // obtenemos la distancia del player a este agente.
+            float distance = (transform.position - player.transform.position).magnitude;
+            if (distance < shortestDistance)
             {
-                // obtenemos la distancia del player a este agente.
-                float distance = (transform.position - player.transform.position).magnitude;
-                if (distance < shortestDistance)
-                {
-                    // pues ahora la distancia más corta es esta distancia
-                    shortestDistance = distance;
-                    nearestPlayer = player; // actualizamos la referencia al player que está más cercano.
-                }
+                // pues ahora la distancia más corta es esta distancia
+                shortestDistance = distance;
+                nearestPlayer = player; // actualizamos la referencia al player que está más cercano.
             }
         }
         
@@ -81,13 +78,16 @@ public class Agent : MonoBehaviour
         // EXCEPTO si no hay ningún player.
         if (nearestPlayer)
         {
+            Rigidbody targetRb = nearestPlayer.GetComponent<Rigidbody>();
             // Entonces sí encontramos al player má cercano. Aquí ya podemos reaccionar a eso.
-            _steeringBehaviors.SetTarget(nearestPlayer.transform.position, nearestPlayer.GetComponent<Rigidbody>());
+            _steeringBehaviors.SetTarget(nearestPlayer.transform.position, targetRb);
         }
         else
         {
             // si no no hay quien reaccionar.
             _steeringBehaviors.RemoveTarget();            
         }
+
+        
     }
 }

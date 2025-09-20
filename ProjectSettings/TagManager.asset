@@ -5,7 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Enemy
-  - Wall
+  - 'Waypoint '
   layers:
   - Default
   - TransparentFX
@@ -13,12 +13,12 @@ TagManager:
   - 
   - Water
   - UI
-  - Enemy
   - Player
-  - PlayerBullet
-  - EnemyBullet
-  - Wall
-  - Floor
+  - Waypoint
+  - Enemy
+  - 
+  - 
+  - 
   - 
   - 
   - 
