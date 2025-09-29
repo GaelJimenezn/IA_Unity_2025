@@ -26,7 +26,7 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
     private void CambiarWaypointManualmente()
     {
         float distanceToWaypoint =
-            Senses.PuntaMenosCola(waypoints[_currentTargetWaypoint].position, transform.position).magnitude;
+            Utilities.PuntaMenosCola(waypoints[_currentTargetWaypoint].position, transform.position).magnitude;
 
         if (distanceToWaypoint < toleranceRadius)
         {
