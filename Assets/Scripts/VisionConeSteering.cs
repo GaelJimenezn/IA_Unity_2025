@@ -1,4 +1,4 @@
-// Desarrollado por: Gael (Proyecto Individual)
+/*// Desarrollado por: Gael (Proyecto Individual)
 // Este script sirve como puente entre VisionCone y RigidbodySteeringBehaviours,
 // manejando la lógica de persecución y seguimiento.
 // Basado en la clase "RigidbodySteeringBehaviours" del profesor y adaptado del código de un compañero.
@@ -89,4 +89,4 @@ public class VisionConeSteering : RigidbodySteeringBehaviours
             }
         }
     }
-}
+}*/

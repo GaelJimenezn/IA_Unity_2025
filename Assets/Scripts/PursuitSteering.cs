@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 
 // Desarrollado por: Gael (Proyecto Individual)
 // Esta clase hereda de RigidbodySteeringBehaviours y añade la lógica de persecución.
@@ -30,4 +30,4 @@ public class PursuitSteering : RigidbodySteeringBehaviours
             _rb.linearVelocity = _rb.linearVelocity.normalized * maxSpeed;
         }
     }
-}
+}*/

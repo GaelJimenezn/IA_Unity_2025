@@ -15,12 +15,15 @@ public class Agent : MonoBehaviour
     // Si todavía tiene balas o ya no.
 
     private RigidbodySteeringBehaviours _steeringBehaviors;
+    
+    // si detectaste a algún gameObject que tenga la tag de player, persíguelo.
 
     public int MaxHP;
     public int CurrentHP;
-    public int HPtoFlee;
+    public int HPToFlee;
 
     public float RadiusBeforeStopMovingDuringFlee = 10.0f;
+    
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -76,34 +79,33 @@ public class Agent : MonoBehaviour
             }
         }
         
-        //si este agente tiene poca HP de sobra, qu cambie a flee
-       
+        
         
         // cuando termine el foreach, ya vamos a tener al player más cercano a este agente.
         // EXCEPTO si no hay ningún player.
         if (nearestPlayer)
         {
-            
-            if (CurrentHP <= HPtoFlee)
+            // Si este agente tiene poquita HP de sobra, que cambie a flee
+            if (CurrentHP <= HPToFlee)
             {
-                if (Utilities.IsObjectInRange(transform.position, nearestPlayer.transform.position, 10.0f))
+                if (Utilities.IsObjectInRange(transform.position, nearestPlayer.transform.position, RadiusBeforeStopMovingDuringFlee))
                 {
-                    //si estoy dentro de ese rango, si voy a escapar
-                    _steeringBehaviors.currentBehavior =  ESteeringBehaviors.Flee;
+                    // si sí estoy dentro de ese rango, sí voy a escapar porque todavía no estoy suficientemente lejos.
+                    _steeringBehaviors.currentBehavior = ESteeringBehaviors.Flee;
                 }
                 else
                 {
-                    //si no, entonces que se quede quieto
-                    _steeringBehaviors.currentBehavior =  ESteeringBehaviors.DontMove;
+                    // si no, quiere decir que ya estamos suficientemente lejos, entonces que se quede quieto.
+                    _steeringBehaviors.currentBehavior = ESteeringBehaviors.DontMove;
                 }
-            
-                //en otra posibilidad seria que haga seek a una curacion en el escenario o algo 
+                // otra posibilidad sería que le haga seek hacia una curación en el escenario o algo.
             }
             else
             {
-                //si tiene mucha HP que cambie a pursuit
-                _steeringBehaviors.currentBehavior = ESteeringBehaviors.Pursuit;
+                // si tiene mucha vida, que cambie a pursuit
+                _steeringBehaviors.currentBehavior = ESteeringBehaviors.Arrive;
             }
+            
             
             Rigidbody targetRb = nearestPlayer.GetComponent<Rigidbody>();
             // Entonces sí encontramos al player má cercano. Aquí ya podemos reaccionar a eso.

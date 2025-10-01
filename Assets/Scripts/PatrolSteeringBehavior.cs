@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,43 +5,67 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
 {
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
     [SerializeField] private float toleranceRadius = 2.0f;
-
-    private int _currentTargetWaypoint = 0;
-
+    
+    private int _currentTargetWaypoint;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    protected new void Start() // <- ya no override
+    new void Start()
     {
-        base.Start(); // Ojo: esto solo compila si Start() existe en la base como public/protected
+        base.Start();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        // este agente tiene una serie de waypoints a los cuales tiene que visitar en orden.
+
+
+        // La dejo comentada porque yo voy a estar usando lo del OnTriggerEnter.
+        // CambiarWaypointManualmente();
+        
+        // se va a mover usando un steering behavior de seek, hacia el waypoint objetivo actual
+        // y para ello, necesitamos guardar cuál es el objetivo actual.
         Vector3 steeringForce = Seek(waypoints[_currentTargetWaypoint].position);
+        
+        // la steering force no puede ser mayor que la max steering force PERO sí puede ser menor.
         steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
+        
+        // Aplicamos esta fuerza para mover a nuestro agente.
         _rb.AddForce(steeringForce, ForceMode.Acceleration);
+        
     }
 
+/*
     private void CambiarWaypointManualmente()
     {
+        // para cambiar el índice hacia el siguiente waypoint lo hacemos cuando ya hayamos llegado al actual.
         float distanceToWaypoint =
             Utilities.PuntaMenosCola(waypoints[_currentTargetWaypoint].position, transform.position).magnitude;
 
+        // esto es la manera estándar en que lo harían
+        // Vector3.Distance(waypoints[_currentTargetWaypoint].position, transform.position);
+        
         if (distanceToWaypoint < toleranceRadius)
         {
+            // si las posiciones son iguales, entonces ya llegamos.
             _currentTargetWaypoint++;
+            // Lo ciclamos al 0 en caso de que haya sido el último waypoint.
             _currentTargetWaypoint %= waypoints.Count;
         }
     }
+*/
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Waypoint"))
         {
+            // si las posiciones son iguales, entonces ya llegamos.
             _currentTargetWaypoint++;
+            // Lo ciclamos al 0 en caso de que haya sido el último waypoint.
             _currentTargetWaypoint %= waypoints.Count;
         }
-
+        
+        
         Debug.Log($"El objeto: {name} chocó contra el trigger: {other.name}");
     }
 
@@ -50,28 +73,32 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
-            Destroy(gameObject);
+            // si me toca un enemy con Collider (no-trigger), se destruye el gameObject dueño de este script.
+            // Destroy(gameObject);
         }
-
+        
         Debug.Log($"El objeto: {name} chocó contra el collider (no-trigger): {other.gameObject.name}");
     }
 
+    // Casi nunca se usa porque es muy pesada. Hay alternativas mejores.
+    // private void OnTriggerStay(Collider other)
+    // {
+    //     
+    // }
+
     private void OnDrawGizmosSelected()
     {
-        // Color personalizado para rosa claro
-        Gizmos.color = new Color(1f, 0.4f, 0.7f);
+        Gizmos.color = Color.magenta;
         foreach (var waypoint in waypoints)
         {
             Gizmos.DrawWireSphere(waypoint.position, toleranceRadius);
         }
     }
 
-    protected new void OnDrawGizmos() // <- usamos new en lugar de override
+    private new void OnDrawGizmos()
     {
+        // Línea hacia su target
         Gizmos.color = Color.red;
-        if (waypoints != null && waypoints.Count > 0)
-        {
-            Gizmos.DrawLine(transform.position, waypoints[_currentTargetWaypoint].position);
-        }
+        Gizmos.DrawLine(transform.position, waypoints[_currentTargetWaypoint].position);
     }
 }
