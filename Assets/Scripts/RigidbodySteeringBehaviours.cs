@@ -140,6 +140,27 @@ public class RigidbodySteeringBehaviours : MonoBehaviour
         steeringForce = desiredVelocity - _rb.linearVelocity;
         return steeringForce;
     }
+
+    public Vector3 ObstacleAvoidance()
+    {
+        Vector3 steeringForce = Vector3.zero;
+        if (useObstacleAvoidance)
+        {
+            // vamos a sumar las fuerzas de todos los obstáculos.
+            // entonces necesitamos detectar a los obstáculos!
+            var obstacles = Utilities.GetObjectsInRadius(transform.position, obstacleAvoidanceDetectionRadius,
+                obstacleAvoidanceLayerMask);
+            // tenemos que checar qué tanta fuerza aplica cada uno de ellos.
+            foreach (var obstacle in obstacles)
+            {
+                float distanceToObstacle = (transform.position - obstacle.transform.position).magnitude;
+                steeringForce += Flee(obstacle.transform.position) * distanceToObstacle /
+                                 obstacleAvoidanceDetectionRadius;
+            }
+        }
+
+        return steeringForce;
+    }
     
     // Update is called a fixed number of times each second. 50 by default.
     void FixedUpdate()
@@ -175,20 +196,7 @@ public class RigidbodySteeringBehaviours : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
 
-        if (useObstacleAvoidance)
-        {
-            // vamos a sumar las fuerzas de todos los obstáculos.
-            // entonces necesitamos detectar a los obstáculos!
-            var obstacles = Utilities.GetObjectsInRadius(transform.position, obstacleAvoidanceDetectionRadius,
-                obstacleAvoidanceLayerMask);
-            // tenemos que checar qué tanta fuerza aplica cada uno de ellos.
-            foreach (var obstacle in obstacles)
-            {
-                float distanceToObstacle = (transform.position - obstacle.transform.position).magnitude;
-                steeringForce += Flee(obstacle.transform.position) * distanceToObstacle /
-                                 obstacleAvoidanceDetectionRadius;
-            }
-        }
+        steeringForce += ObstacleAvoidance();
          
         
         // la steering force no puede ser mayor que la max steering force PERO sí puede ser menor.

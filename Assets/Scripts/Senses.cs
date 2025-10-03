@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +16,7 @@ public class Senses : MonoBehaviour
     // 1) hacer una variable que se puede cambiar desde el editor.
     public float radioDeDeteccion = 20.0f;
     // 1.A) hacer una variable no-pública que se puede cambiar desde el editor
-    //[SerializeField] private float radioDeDeteccionPrivado = 2.0f;
+    [SerializeField] private float radioDeDeteccionPrivado = 2.0f;
 
     [SerializeField] private LayerMask desiredDetectionLayers; 
     
@@ -37,14 +40,43 @@ public class Senses : MonoBehaviour
     // Lista de GameObjects encontrados este frame
     private List<GameObject> _foundGameObjects ;
     public List<GameObject> foundGameObjects => _foundGameObjects;
+
+    
+
+
+
+        
     
     // Vamos a detectar cosas que estén en un radio determinado.
     void DetectarTodosLosGameObjects()
     {
         // Esta obtiene TODOS los gameObjects en la escena.
-        _foundGameObjects = Utilities.GetObjectsInRadius(transform.position, radioDeDeteccion, desiredDetectionLayers);
+        _foundGameObjects = GetGameObjectsInsideRadius(radioDeDeteccion, transform.position);
     }
+
+    public static List<GameObject> GetGameObjectsInsideRadius(float radius, Vector3 position)
+    {
+        List<GameObject> foundGO = FindObjectsByType<GameObject>(FindObjectsSortMode.InstanceID).ToList();
+
+        List<GameObject> gameObjectsInsideRadius = new List<GameObject>();
+        
+        // Después los filtramos para que solo nos dé los que sí están dentro del radio determinado.
+        foreach (var foundGameObject in foundGO)
+        {
+            if (Utilities.IsObjectInRange(foundGameObject.transform.position, position, radius))
+            {
+                gameObjectsInsideRadius.Add(foundGameObject);
+            }
+        }
+
+        return gameObjectsInsideRadius;
+    }
+
+
+
+
     
+
     
     public List<GameObject> GetAllObjectsByLayer(int layer)
     {
@@ -98,7 +130,8 @@ public class Senses : MonoBehaviour
     {
         return GetAllObjectsByLayer(LayerMask.NameToLayer("EnemyBullet"));
     }
-    
+
+
     
     // la Layer es solo un int, entonces solo necesitas una comparación para saber qué choca con qué.
     // Principalmente se usan para la simulación física. Podemos tener hasta 32 layers porque un entero tiene 32 bits (4 bytes).

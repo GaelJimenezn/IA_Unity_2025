@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using NUnit.Framework;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
@@ -6,10 +9,10 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
     [SerializeField] private float toleranceRadius = 2.0f;
     
-    private int _currentTargetWaypoint;
+    private int _currentTargetWaypoint = 0;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    new void Start()
+    void Start()
     {
         base.Start();
     }
@@ -35,7 +38,6 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
         
     }
 
-/*
     private void CambiarWaypointManualmente()
     {
         // para cambiar el índice hacia el siguiente waypoint lo hacemos cuando ya hayamos llegado al actual.
@@ -53,7 +55,6 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
             _currentTargetWaypoint %= waypoints.Count;
         }
     }
-*/
 
     private void OnTriggerEnter(Collider other)
     {
@@ -86,16 +87,21 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
     //     
     // }
 
+    private void OnTriggerExit(Collider other)
+    {
+        
+    }
+
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.magenta;
+        Gizmos.color = Color.pink;
         foreach (var waypoint in waypoints)
         {
             Gizmos.DrawWireSphere(waypoint.position, toleranceRadius);
         }
     }
 
-    private new void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
         // Línea hacia su target
         Gizmos.color = Color.red;
