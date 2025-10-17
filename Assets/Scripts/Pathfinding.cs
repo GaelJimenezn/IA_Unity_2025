@@ -19,6 +19,7 @@
  * FUENTES CONSULTADAS:
  * - Código base y explicaciones del profesor de IA (EtreSerBe).
  * - Documentación oficial de Unity sobre Queue, HashSet y Gizmos.
+ * - Atef Codes: https://youtu.be/_kn0LMUNPvU?si=arq4otT9eNm03ube
  *
  * FECHA: 16 de octubre de 2025
  *******************************************************/
