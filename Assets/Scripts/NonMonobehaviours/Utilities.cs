@@ -32,6 +32,57 @@ public class Utilities
         // return vector3.magnitude;
     }
     
+    public static Vector3 Seek(Vector3 targetPosition, Vector3 currentPosition, float agentMaxSpeed, Vector3 currentVelocity)
+    {
+        // Si sí hay un objetivo, empezamos a hacer Seek, o sea, a perseguir ese objetivo.
+        // Lo primero es obtener la dirección deseada. El método punta menos cola lo usamos con nuestra posición
+        // como la cola, y la posición objetivo como la punta
+        Vector3 puntaMenosCola = Utilities.PuntaMenosCola(targetPosition, currentPosition);
+        Vector3 desiredDirection = puntaMenosCola.normalized; // normalized nos da la pura dirección con una magnitud de 1.
+
+        // Ya que tenemos esa dirección, la multiplicamos por nuestra velocidad máxima posible, y eso es la velocidad deseada.
+        Vector3 desiredVelocity = desiredDirection * agentMaxSpeed;
+        
+        // La steering force es la diferencia entre la velocidad deseada y la velocidad actual
+        Vector3 steeringForce = desiredVelocity - currentVelocity;
+        return steeringForce;
+    }
+    
+    public static Vector3 PredictPosition(Vector3 currentPosition, Vector3 startingTargetPosition, Vector3 targetVelocity)
+    {
+        // la distancia entre mi objetivo y yo en este preciso momento / mi max speed
+        float lookAheadCalculado = Utilities.PuntaMenosCola(startingTargetPosition, currentPosition).magnitude ;
+        
+        // Pursuit
+        // Tenemos que obtener la posición futura del objetivo. Necesitamos:
+        // A) La posición actual del objetivo.
+        // B) la velocidad actual del objetivo (el vector que trae tanto magnitud como dirección)
+        // C) el tiempo en el futuro en el que queremos predecir (por ejemplo, 2 segundos, 5 segundos, 1 hora, etc.)
+        // _targetPosition
+        Vector3 targetCurrentVelocity = targetVelocity;
+        
+        Vector3 predictedPosition = startingTargetPosition + targetCurrentVelocity * lookAheadCalculado;
+        return predictedPosition;
+    }
+    
+    public static Vector3 PredictPosition(Vector3 currentPosition, Vector3 startingTargetPosition, 
+        Vector3 targetVelocity, float agentMaxSpeed)
+    {
+        // la distancia entre mi objetivo y yo en este preciso momento / mi max speed
+        float lookAheadCalculado = Utilities.PuntaMenosCola(startingTargetPosition, currentPosition).magnitude / agentMaxSpeed;
+        
+        // Pursuit
+        // Tenemos que obtener la posición futura del objetivo. Necesitamos:
+        // A) La posición actual del objetivo.
+        // B) la velocidad actual del objetivo (el vector que trae tanto magnitud como dirección)
+        // C) el tiempo en el futuro en el que queremos predecir (por ejemplo, 2 segundos, 5 segundos, 1 hora, etc.)
+        // _targetPosition
+        Vector3 targetCurrentVelocity = targetVelocity;
+        
+        Vector3 predictedPosition = startingTargetPosition + targetCurrentVelocity * lookAheadCalculado;
+        return predictedPosition;
+    }
+    
     public static bool IsObjectInRange(Vector3 posA, Vector3 posB, float range)
     {
         // Primero hacemos punta menos cola entre la posición de este GameObject y la del foundGameObject,

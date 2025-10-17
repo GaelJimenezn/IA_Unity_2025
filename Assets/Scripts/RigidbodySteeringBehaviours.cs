@@ -75,6 +75,7 @@ public class RigidbodySteeringBehaviours : MonoBehaviour
 
     public Vector3 Flee(Vector3 targetPosition)
     {
+        // return -Utilities.Seek(targetPosition, transform.position, maxSpeed, _rb.linearVelocity);
         // Porque flee es lo mismo que seek, pero en la dirección opuesta.
         return -Seek(targetPosition);
     }
@@ -98,7 +99,9 @@ public class RigidbodySteeringBehaviours : MonoBehaviour
     
     public Vector3 Pursuit(Vector3 targetPosition)
     {
-        Vector3 predictedPosition = PredictPosition(_targetPosition, _targetRb.linearVelocity);
+        Vector3 predictedPosition = Utilities.PredictPosition(transform.position, 
+            _targetPosition, _targetRb.linearVelocity, maxSpeed);
+        // Vector3 predictedPosition = PredictPosition(_targetPosition, _targetRb.linearVelocity);
         
         Vector3 steeringForce = Seek(predictedPosition);
         return steeringForce;
