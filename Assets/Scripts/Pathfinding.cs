@@ -146,7 +146,7 @@ public class Pathfinding : MonoBehaviour
     [Range(0.0f, 1.0f)]
     [SerializeField] private float gizmosSphereSize = 0.2f;
     public GameObject pathMarkerPrefab; // Para los puntos extra:  aquí el prefab visual.
-
+    public GameObject tilePrefab;
     [Header("Generación Aleatoria del Mapa")]
     [Range(0.0f, 1.0f)]
     [SerializeField] private float walkableProbability = 0.5f;
@@ -205,8 +205,40 @@ public class Pathfinding : MonoBehaviour
                         throw new ArgumentOutOfRangeException(nameof(tileType), tileType, null);
                 }
                 
+                
                 // NOTA: Entre más anidado (interno, profundo) esté el for, más a la derecha va en el corchete su índice.
                 _grid[i][j] = new Node(j, i, tileType, fCost, isWalkable);
+                
+                if (tilePrefab != null)
+                {
+                    // Calculamos la posición del tile
+                    Vector3 tilePosition = new Vector3(j, -i, 0.0f); 
+
+                    // Creamos una instancia del prefab en esa posición
+                    GameObject tileObject = Instantiate(tilePrefab, tilePosition, Quaternion.identity);
+                    
+                    // IMPORTANTE: NO le hacemos SetParent, para que NO se mueva con el personaje.
+
+                    // Obtenemos el renderer para cambiarle el color
+                    Renderer tileRenderer = tileObject.GetComponent<Renderer>();
+
+                    // Asignamos el color según si es caminable y su tipo
+                    if (isWalkable)
+                    {
+                        switch (tileType)
+                        {
+                            case ETileType.Normal: tileRenderer.material.color = new Color(0.8f, 0.8f, 0.8f); break; // Un gris claro
+                            case ETileType.Fire:   tileRenderer.material.color = Color.red; break;
+                            case ETileType.Forest: tileRenderer.material.color = Color.green; break;
+                            case ETileType.Sand:   tileRenderer.material.color = Color.yellow; break;
+                        }
+                    }
+                    else
+                    {
+                        tileRenderer.material.color = Color.black; // Muro
+                    }
+                }
+              
             }
         }
     }
@@ -430,14 +462,14 @@ public class Pathfinding : MonoBehaviour
     // Usen la Queue https://learn.microsoft.com/es-es/dotnet/api/system.collections.generic.queue-1?view=net-8.0
     private bool BreadthFirstSearch(Node origin, Node goal)
     {
-        // 1. CREA LA FILA Y LA LISTA CERRADA
+        // 1. SE CREA LA FILA Y LA LISTA CERRADA
         Queue<Node> openList = new Queue<Node>();
         
         // Usamos la _closedList global para que los Gizmos puedan visualizarla.
         // La limpiamos para asegurarnos de que no hay datos de búsquedas anteriores.
         _closedList.Clear();
 
-        // 2. INICIALIZA LA BÚSQUEDA
+        // 2. SE INICIALIZA LA BÚSQUEDA
         origin.Parent = origin;
         openList.Enqueue(origin);
         _closedList.Add(origin);
@@ -449,7 +481,7 @@ public class Pathfinding : MonoBehaviour
 
             if (current == goal)
             {
-                return true; // ¡Camino encontrado!
+                return true; // Camino encontrado
             }
 
             // 4. PROCESA LOS VECINOS
@@ -488,9 +520,9 @@ public class Pathfinding : MonoBehaviour
         }
 
         // 5. SI NO HAY CAMINO
+        Debug.Log("No se encontró un camino.");
         return false;
     }
-    
     
     private bool BestFirstSearch(Node origin, Node goal)
     {
@@ -638,7 +670,6 @@ public class Pathfinding : MonoBehaviour
         return false; // si no se encontró camino.
     }
     
-    
     private bool DjikstraSearch(Node origin, Node goal)
     {
         // Nodo origen es su propio padre.
@@ -735,8 +766,8 @@ public class Pathfinding : MonoBehaviour
 
     public bool FindPath()
     {
-        InitializeGrid();
-        SetupGrid();
+        
+        transform.position = new Vector3(originX, -originY, 0.0f);
         
         // --- SELECCION DEL ALGORITMO A UTILIZAR ---
         if (BreadthFirstSearch(_grid[originY][originX], _grid[goalY][goalX]))
@@ -764,7 +795,7 @@ public class Pathfinding : MonoBehaviour
             {
                 foreach (Node node in _pathToGoal)
                 {
-                    Vector3 markerPosition = new Vector3(node.X, -node.Y, 0);
+                    Vector3 markerPosition = new Vector3(node.X, -node.Y, -0.5f);
                     Instantiate(pathMarkerPrefab, markerPosition, Quaternion.identity);
                 }
             }
@@ -796,17 +827,13 @@ public class Pathfinding : MonoBehaviour
         
         // él es su propio parent, de lo contrario los otros nodos lo toman como que no ha sido visitado y lo usan 
         // para el pathfinding.
-        _grid[originY][originX].Parent = _grid[originY][originX];
+        // _grid[originY][originX].Parent = _grid[originY][originX];
 
         // --- LLAMADA AL ALGORITMO ---
   
         FindPath();
         
-        // VERSIONES CORRUTINA
-        // StartCoroutine(DepthFirstSearchIterativeCoroutine(_grid[originY][originX], _grid[goalY][goalX]));
-        // StartCoroutine(BestFirstSearchCoroutine(_grid[originY][originX], _grid[goalY][goalX]));
-        // StartCoroutine(AStarSearchCoroutine(_grid[originY][originX], _grid[goalY][goalX]));
-        // StartCoroutine(AStarSearchDiagonalCoroutine(_grid[originY][originX], _grid[goalY][goalX]));
+  
     }
 
     // Update is called once per frame

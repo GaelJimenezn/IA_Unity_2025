@@ -31,13 +31,19 @@ public class PatrolSteeringBehavior : RigidbodySteeringBehaviours
             Vector3 newWaypoint = new Vector3(node.X, -node.Y, 0.0f);
             waypoints.Add(newWaypoint);
         }
+        
+        if (waypoints.Count == 0)
+        {
+            // Si está vacía, es porque FindPath() falló y no añadió nada.
+            Debug.LogWarning($"El agente {name} no pudo obtener una ruta. No se moverá.");
+        }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         // este agente tiene una serie de waypoints a los cuales tiene que visitar en orden.
-
+        if (waypoints.Count == 0) return;
 
         // La dejo comentada porque yo voy a estar usando lo del OnTriggerEnter.
         CambiarWaypointManualmente();

@@ -283,7 +283,7 @@ MonoBehaviour:
   gizmosSphereSize: 0.2
   pathMarkerPrefab: {fileID: 6446627068286627524, guid: f20e0f5e4ea55a74a8979d0ef38cb044, type: 3}
   tilePrefab: {fileID: 111510489533514028, guid: 18fffce21f8a68f42a78d84869cf43ff, type: 3}
-  walkableProbability: 1
+  walkableProbability: 0.6
   normalTileCost: 1
   fireTileCost: 20
   forestTileCost: 2
